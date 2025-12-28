@@ -1,0 +1,197 @@
+"use client"
+
+import { useEffect, useMemo, useState, useRef } from 'react'
+import useFocusTrap from '@/hooks/useFocusTrap'
+
+type Service = { name: string; duration: string; price: string }
+
+export default function BookingModal({
+  open,
+  onClose,
+  proName,
+  services,
+  selectedDateTime,
+  type = 'reservation',
+}: {
+  open: boolean
+  onClose: () => void
+  proName: string
+  services?: Service[]
+  selectedDateTime?: string
+  type?: 'reservation' | 'waitlist'
+}) {
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [people, setPeople] = useState(1)
+  const [location, setLocation] = useState('청담 Studio')
+  const [service, setService] = useState(services?.[0]?.name ?? '')
+  const [note, setNote] = useState('')
+  const [agree, setAgree] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+
+  // Focus management
+  const modalRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLElement | null>(null)
+
+  // Store trigger element when modal opens
+  useEffect(() => {
+    if (open) {
+      triggerRef.current = document.activeElement as HTMLElement
+      setSubmitted(false)
+    }
+  }, [open])
+
+  // Restore focus when modal closes
+  useEffect(() => {
+    if (!open && triggerRef.current) {
+      triggerRef.current.focus()
+    }
+  }, [open])
+
+  // Focus trap and Escape key handling
+  useFocusTrap(
+    modalRef,
+    open,
+    { onClose }
+  )
+
+  const disabled = useMemo(() => !name || !phone || !agree, [name, phone, agree])
+
+  if (!open) return null
+
+  const handleSubmit = () => {
+    // For MVP: just log and show confirmation
+    console.log({ type, proName, selectedDateTime, name, phone, people, location, service, note })
+    setSubmitted(true)
+  }
+
+  return (
+    <div className="modal-overlay modal-overlay-animate" onClick={onClose}>
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="booking-modal-title"
+        className="modal-container mx-4 max-w-lg modal-content-animate p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {!submitted ? (
+          <>
+            <div className="mb-6 flex items-center justify-between">
+              <h4 id="booking-modal-title" className="font-pretendard text-h3 font-semibold text-tee-ink-strong">
+                {type === 'reservation' ? '레슨 예약하기' : '대기 신청하기'}
+              </h4>
+              <button
+                onClick={onClose}
+                className="btn-ghost"
+              >
+                닫기
+              </button>
+            </div>
+            <p className="mb-6 text-body-sm text-tee-ink-light">
+              담당 프로: <span className="font-semibold text-tee-ink-strong">{proName}</span>
+              {selectedDateTime ? (
+                <>
+                  {' '}· 예약 일시{' '}
+                  <span className="font-semibold text-tee-ink-strong">
+                    {selectedDateTime.replace('T', ' ')}
+                  </span>
+                </>
+              ) : null}
+            </p>
+
+            <div className="space-y-4">
+              <input
+                className="input"
+                placeholder="성함을 입력하세요"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <input
+                className="input"
+                placeholder="연락처를 입력하세요 (- 없이)"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <select
+                  className="select"
+                  value={people}
+                  onChange={(e) => setPeople(parseInt(e.target.value || '1', 10))}
+                >
+                  {[1, 2, 3].map((n) => (
+                    <option key={n} value={n}>
+                      레슨 인원 {n}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="select"
+                  value={service}
+                  onChange={(e) => setService(e.target.value)}
+                >
+                  {(services?.length ? services : [{ name: 'Signature Lesson', duration: '90m', price: '₩180,000' }]).map(
+                    (s) => (
+                      <option key={s.name} value={s.name}>
+                        {s.name} · {s.duration} · {s.price}
+                      </option>
+                    ),
+                  )}
+                </select>
+              </div>
+              <input
+                className="input"
+                placeholder="레슨 희망 장소 (예: 청담 Studio)"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
+              <textarea
+                className="input min-h-[100px] resize-none"
+                placeholder="요청 사항을 적어주세요"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+              <label className="flex items-center gap-2 text-body-xs text-tee-ink-light">
+                <input
+                  type="checkbox"
+                  checked={agree}
+                  onChange={(e) => setAgree(e.target.checked)}
+                  className="h-4 w-4 rounded border-tee-stone text-tee-accent-primary focus:ring-tee-accent-primary"
+                />
+                예약 및 취소 안내를 확인했어요.
+              </label>
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={disabled}
+              className="mt-6 h-12 w-full rounded-xl bg-tee-accent-primary px-6 py-3 font-medium text-white transition-colors hover:bg-tee-accent-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {type === 'reservation' ? '예약 신청하기' : '대기 신청하기'}
+            </button>
+          </>
+        ) : (
+          <div className="py-8 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success-bg">
+              <svg className="h-8 w-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h4 className="font-pretendard text-h3 font-semibold text-tee-ink-strong">
+              신청이 완료됐어요
+            </h4>
+            <p className="mt-2 text-body-sm text-tee-ink-light">
+              담당 프로가 확인한 뒤 빠르게 연락드릴게요.
+            </p>
+            <button
+              onClick={onClose}
+              className="mt-6 h-12 rounded-xl border border-tee-stone bg-tee-surface px-6 py-3 font-medium text-tee-ink-strong transition-colors hover:bg-tee-background"
+            >
+              닫기
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

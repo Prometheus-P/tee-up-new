@@ -1,0 +1,7 @@
+{
+  "name": "TeeUp Pro",
+  "description": "A premium golf management and social platform. Track your rounds, discover elite courses, and get real-time AI-powered caddy advice.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

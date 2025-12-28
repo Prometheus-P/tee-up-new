@@ -1,0 +1,90 @@
+'use client';
+
+interface GlobalErrorProps {
+  error: Error & { digest?: string };
+  reset: () => void;
+}
+
+export default function GlobalError({ error, reset }: GlobalErrorProps) {
+  return (
+    <html lang="ko">
+      <body style={{ backgroundColor: 'var(--tee-background, #FAFAF9)' }}>
+        <div className="flex min-h-screen items-center justify-center px-6">
+          <div className="max-w-md text-center">
+            {/* 경고 아이콘 */}
+            <div
+              className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full"
+              style={{ backgroundColor: 'var(--tee-error-bg, #FEE2E2)' }}
+            >
+              <svg
+                className="h-10 w-10"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                style={{ color: 'var(--tee-error, #EF4444)' }}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+
+            <h1
+              className="mb-4 text-2xl font-semibold"
+              style={{ color: 'var(--tee-ink-strong, #1A1A17)' }}
+            >
+              문제가 발생했어요
+            </h1>
+            <p
+              className="mb-8 text-base"
+              style={{ color: 'var(--tee-ink-light, #52524E)' }}
+            >
+              페이지를 불러오지 못했어요.
+              새로고침하거나 잠시 후 다시 시도해주세요.
+            </p>
+
+            <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+              <button
+                onClick={reset}
+                className="h-12 rounded-xl px-6 font-medium text-white transition-colors"
+                style={{ backgroundColor: 'var(--tee-accent-primary, #0A362B)' }}
+              >
+                다시 시도
+              </button>
+              <a
+                href="/"
+                className="h-12 rounded-xl border px-6 py-3 font-medium transition-colors"
+                style={{
+                  borderColor: 'var(--tee-stone, #E8E8E5)',
+                  color: 'var(--tee-ink-strong, #1A1A17)',
+                  backgroundColor: 'var(--tee-surface, #FFFFFF)'
+                }}
+              >
+                홈으로 이동
+              </a>
+            </div>
+
+            {process.env.NODE_ENV === 'development' && (
+              <div className="mt-8 text-left">
+                <p
+                className="mb-2 text-sm"
+                style={{ color: 'var(--tee-ink-muted, #78786E)' }}
+              >
+                  오류 정보
+              </p>
+                <pre
+                  className="overflow-auto rounded-xl border p-4 text-xs"
+                  style={{
+                    borderColor: 'var(--tee-error, #D32F2F)',
+                    backgroundColor: 'rgba(211, 47, 47, 0.1)',
+                    color: 'var(--tee-error, #D32F2F)'
+                  }}
+                >
+                  {error.message}
+                </pre>
+              </div>
+            )}
+          </div>
+        </div>
+      </body>
+    </html>
+  );
+}
